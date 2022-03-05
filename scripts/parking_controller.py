@@ -25,21 +25,37 @@ class ParkingController():
         self.parking_distance = .75 # meters; try playing with this number!
         self.relative_x = 0
         self.relative_y = 0
+        self.dist_thresh = self.parking_distance + 0.5 # parameterize later
+        self.angle_thresh = np.pi/4
+        self.previous_angle = 0
+        self.kd = 0
 
     def relative_cone_callback(self, msg):
         self.relative_x = msg.x_pos
         self.relative_y = msg.y_pos
         drive_cmd = AckermannDriveStamped()
 
-        #################################
-
-        # YOUR CODE HERE
-        # Use relative position and your control law to set drive_cmd
-
-        #################################
+        #pseudocode
+        #if relative distance too close to car or extreme angle
+            # execute reversal. Function of theta to determine which direction to do reversal in
+        # else
+            # use relative angle as steering angle plus some damping with derivative term to avoid overshoot
+            # and oscillation
+        
+        theta = np.arctan2(self.relative_y, self.relative_x)
+        if np.sqrt(self.relative_x**2 + self.relative_y**2) < self.dist_thresh or abs(theta) > angle_thresh:
+            self.revesal(theta)
+        else:
+            self.drive_cmd.speed = abs(self.drive_cmd.speed)
+            self.drive_cmd.steering_angle = theta + self.kd*(theta - self.previous_angle)
+            self.previous_angle = theta
 
         self.drive_pub.publish(drive_cmd)
         self.error_publisher()
+
+    def reversal(self, theta):
+        self.drive_cmd.steering_angle(-theta)
+        self.drive_cmd.speed = -abs(self.drive_cmd.speed)
 
     def error_publisher(self):
         """
