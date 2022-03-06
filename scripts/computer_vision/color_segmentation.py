@@ -64,7 +64,7 @@ def cd_color_segmentation(img, template=None):
     #image_print(filtered_img)
     hsv_img = cv2.cvtColor(filtered_img, cv2.COLOR_RGB2HSV)
     mask = cv2.inRange(hsv_img, light_orange, dark_orange)
-    image_print(mask)
+    #image_print(mask)
     
     # Find remaning contours, correspond to orange objects
     contours = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
