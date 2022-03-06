@@ -2,6 +2,12 @@ import cv2
 import imutils
 import numpy as np
 import pdb
+from matplotlib import pyplot as plt
+
+#import os
+# os.environ['DISPLAY'] = ':0'
+
+# from sklearn import linear_model, datasets
 
 #################### X-Y CONVENTIONS #########################
 # 0,0  X  > > > > >
@@ -26,6 +32,7 @@ def image_print(img):
 	cv2.imshow(winname, img)
 	cv2.waitKey()
 	cv2.destroyAllWindows()
+	cv2.waitKey(1)
 
 def cd_sift_ransac(img, template):
 	"""
@@ -42,7 +49,7 @@ def cd_sift_ransac(img, template):
 	sift = cv2.xfeatures2d.SIFT_create()
 
 	# Compute SIFT on template and test image
-	kp1, des1 = sift.detectAndCompute(template,None)
+	kp1, des1 = sift.detectAndCompute(template,None) #detectAndCompute(img,None)
 	kp2, des2 = sift.detectAndCompute(img,None)
 
 	# Find matches
@@ -71,6 +78,23 @@ def cd_sift_ransac(img, template):
 
 		x_min = y_min = x_max = y_max = 0
 
+		#do a perspective transform on the datapoints using ransac
+		dst = cv2.perspectiveTransform(pts,M)
+		bounding_box_coors = np.int32(dst)
+		bounding_box_coors = np.reshape(bounding_box_coors,(4,2))
+		
+		#obtain bounding box mins/maxs
+		mins = np.amin(bounding_box_coors,axis=0)
+		maxs = np.amax(bounding_box_coors,axis=0)
+		
+		x_min,y_min = mins[0], mins[1]
+		x_max,y_max = maxs[0], maxs[1]
+
+
+		#img = cv2.polylines(img, [bounding_box_coors], True, (0,0,255), 1, cv2.LINE_AA)
+		# Reading an image in default mode
+		#image_print(img)
+
 		########### YOUR CODE ENDS HERE ###########
 
 		# Return bounding box
@@ -91,6 +115,8 @@ def cd_template_matching(img, template):
 		bbox: ((x1, y1), (x2, y2)); the bounding box of the cone, unit in px
 				(x1, y1) is the bottom left of the bbox and (x2, y2) is the top right of the bbox
 	"""
+	#make images greyscale
+	template = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	template_canny = cv2.Canny(template, 50, 200)
 
 	# Perform Canny Edge detection on test image
@@ -102,6 +128,10 @@ def cd_template_matching(img, template):
 
 	# Keep track of best-fit match
 	best_match = None
+
+	#key: max_value value: [location in image (x,y), height of template h,width of template w, scale, res] 
+	matches_dict = {} 
+	results = []
 
 	# Loop over different scales of image
 	for scale in np.linspace(1.5, .5, 50):
@@ -115,10 +145,31 @@ def cd_template_matching(img, template):
 		########## YOUR CODE STARTS HERE ##########
 		# Use OpenCV template matching functions to find the best match
 		# across template scales.
+		else:
+			#define the matching method
+			match_method = cv2.TM_CCORR_NORMED
+			#get results of matching with this scale
+			res = cv2.matchTemplate(grey_img, resized_template, match_method)
+			# #normalize reults
+			# normalized_res = cv2.normalize(res,res, 0, 1, cv2.NORM_MINMAX, -1 )
+
+			#_maxVal=highest intensity in image corresponds to the best match
+			_minVal, _maxVal, minLoc, maxLoc = cv2.minMaxLoc(res, None)
+			#add best match to dictionary and list
+			matches_dict[_maxVal] = [maxLoc,h,w, scale, res] 
+			results.append(_maxVal)
+
+		#get key with maximum  value
+		key = max(results)
+		loc,height,width,scale,res = matches_dict[key]
+
+		x1, y1 = loc[0],loc[1]
+		x2, y2 = loc[0] + w, loc[1] + h
 
 		# Remember to resize the bounding box using the highest scoring scale
 		# x1,y1 pixel will be accurate, but x2,y2 needs to be correctly scaled
-		bounding_box = ((0,0),(0,0))
+		bounding_box = ((x1,y1),(x2,y2))
 		########### YOUR CODE ENDS HERE ###########
 
 	return bounding_box
+
