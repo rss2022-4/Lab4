@@ -40,7 +40,10 @@ class ParkingController():
         
         theta = np.arctan2(self.relative_y, self.relative_x)
         distance = np.sqrt(self.relative_x**2 + self.relative_y**2)
-        
+        print('theta', theta)
+        print('distance', distance)
+        print('x', x)
+        print('y', y)
         # Within tolerable desired distance and angle with respect to the cone
         if abs(distance - self.dist_thresh) < self.parking_epsilon and theta < self.angle_epsilon:
             drive_cmd = self.stop(drive_cmd)
