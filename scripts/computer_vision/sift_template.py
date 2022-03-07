@@ -4,10 +4,13 @@ import numpy as np
 import pdb
 from matplotlib import pyplot as plt
 
-#import os
-# os.environ['DISPLAY'] = ':0'
-
-# from sklearn import linear_model, datasets
+#for testing purposes
+import os
+import sys
+import argparse
+CITGO_DIRECTORY = "./test_images_citgo/"
+MAP_DIRECTORY = "./test_images_localization/"
+CONE_DIRECTORY = "./test_images_cone/"
 
 #################### X-Y CONVENTIONS #########################
 # 0,0  X  > > > > >
@@ -87,17 +90,17 @@ def cd_sift_ransac(img, template):
 		mins = np.amin(bounding_box_coors,axis=0)
 		maxs = np.amax(bounding_box_coors,axis=0)
 
-		print(bounding_box_coors)
-		print(mins)
-		print(maxs)
+		# print(bounding_box_coors)
+		# print(mins)
+		# print(maxs)
 		
 		x_min,y_min = mins[0], mins[1]
 		x_max,y_max = maxs[0], maxs[1]
 
 
-		#img = cv2.polylines(img, [bounding_box_coors], True, (0,0,255), 1, cv2.LINE_AA)
+		img = cv2.polylines(img, [bounding_box_coors], True, (0,0,255), 1, cv2.LINE_AA)
 		# Reading an image in default mode
-		#image_print(img)
+		image_print(img)
 
 		########### YOUR CODE ENDS HERE ###########
 
@@ -105,7 +108,7 @@ def cd_sift_ransac(img, template):
 		return ((x_min, y_min), (x_max, y_max))
 	else:
 
-		print("[SIFT] not enough matches; matches: " + len(good))
+		print "[SIFT] not enough matches; matches: ", len(good)
 
 		# Return bounding box of area 0 if no match found
 		return ((0,0), (0,0))
@@ -169,4 +172,44 @@ def cd_template_matching(img, template):
 	########### YOUR CODE ENDS HERE ###########
 
 	return bounding_box
+
+def parse_dir(directory):
+	if directory == 'citgo':
+		return CITGO_DIRECTORY
+	elif directory == 'map':
+		return MAP_DIRECTORY
+	return CONE_DIRECTORY
+
+def run(algo,template,source,dir):
+	d = parse_dir(dir)
+	source = d + source
+	template = d + template
+
+	if os.path.exists(source) and os.path.exists(template) :
+		if algo == "sift":
+			i= cv2.imread(source)
+			t = cv2.imread(template, 0)
+			cd_sift_ransac(i, t)
+		elif algo == "template":
+			i= cv2.imread(source)
+			t = cv2.imread(template, 0)
+			cd_template_matching(source, template)
+		else:
+			print("invlaid algo")
+	else:
+		print('invalid path')
+
+
+if __name__ == "__main__":
+	AVAILABLE_ALGORITHMS = ["sift", "template"]
+	parser = argparse.ArgumentParser(description="Provide arguments")
+	parser.add_argument("-a", type=str, default="sift", help="Algorithm to Evaluate")
+	parser.add_argument("-t", type=str, default="citgo_template.png", help="template name")
+	parser.add_argument("-i", type=str, default="citgo1.jpeg", help="image name")
+	parser.add_argument("-d", type=str, default="citgo", help="directory name")
+
+	
+	args = parser.parse_args()
+
+	run(algo=args.a, template=args.t, source=args.i, dir = args.d)
 
