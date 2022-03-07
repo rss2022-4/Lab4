@@ -15,7 +15,7 @@ import sys
 #  v
 ###############################################################
 
-cone_template_path = './test_images_cone/test15.jpg'
+cone_template_path = './test_images_cone/test14.jpg'
 
 def image_print(img):
         """
@@ -37,11 +37,17 @@ def get_largest_contour(contours):
         return None
     largest_area = cv2.contourArea(contours[0])
     largest_contour = contours[0]
+    x, y, w, h = cv2.boundingRect(contours[0])
+    print("# contours", len(contours))
     for contour in contours[1:]:
         new_area = cv2.contourArea(contour)
         if new_area > largest_area:
-            largest_area = new_area
-            largest_contour = contour
+            x, y, w, h = cv2.boundingRect(largest_contour)
+	    print("w, h", w, h)
+	    if w/h < 0.85 and w/h > 0.65:
+	    	largest_area = new_area
+            	largest_contour = contour
+    print("largest_w_h", w, h)
     return largest_contour
     #return max(contours, key=lambda x: cv2.contourArea(x))
 
@@ -56,8 +62,8 @@ def cd_color_segmentation(img, template=None):
         """
 
     # Create mask for orange cone. HSV threshods
-    light_orange = (70, 180, 150)
-    dark_orange = (150, 255, 255)
+    light_orange = (60, 170, 125) #(70, 180, 150)
+    dark_orange = (170, 255, 255) #(150, 255, 255)
     kernel = np.ones((7, 7), np.uint8)
 
     filtered_img = cv2.dilate(cv2.erode(img, kernel, iterations=1), kernel, iterations=1)
