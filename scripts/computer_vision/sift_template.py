@@ -98,8 +98,8 @@ def cd_sift_ransac(img, template):
 		x_max,y_max = maxs[0], maxs[1]
 
 
+		#VISUALIZATION
 		img = cv2.polylines(img, [bounding_box_coors], True, (0,0,255), 1, cv2.LINE_AA)
-		# Reading an image in default mode
 		image_print(img)
 
 		########### YOUR CODE ENDS HERE ###########
@@ -171,6 +171,14 @@ def cd_template_matching(img, template):
 	bounding_box = ((x1,y1),(x2,y2))
 	########### YOUR CODE ENDS HERE ###########
 
+	#VISUALIZATION
+	cv2.rectangle(img,(x1,y1), (x2,y2), 255, 2)
+	plt.subplot(121),plt.imshow(res,cmap = 'gray')
+	plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+	plt.subplot(122),plt.imshow(img,cmap = 'gray')
+	plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+	plt.show()
+
 	return bounding_box
 
 def parse_dir(directory):
@@ -190,10 +198,10 @@ def run(algo,template,source,dir):
 			i= cv2.imread(source)
 			t = cv2.imread(template, 0)
 			cd_sift_ransac(i, t)
-		elif algo == "template":
-			i= cv2.imread(source)
-			t = cv2.imread(template, 0)
-			cd_template_matching(source, template)
+		# elif algo == "template": #doesn't work for template, images will show when running tester
+		# 	i= cv2.imread(source,0)
+		# 	t = cv2.imread(template)
+		# 	cd_template_matching(source, template)
 		else:
 			print("invlaid algo")
 	else:
@@ -201,7 +209,7 @@ def run(algo,template,source,dir):
 
 
 if __name__ == "__main__":
-	AVAILABLE_ALGORITHMS = ["sift", "template"]
+	AVAILABLE_ALGORITHMS = ["sift"]
 	parser = argparse.ArgumentParser(description="Provide arguments")
 	parser.add_argument("-a", type=str, default="sift", help="Algorithm to Evaluate")
 	parser.add_argument("-t", type=str, default="citgo_template.png", help="template name")
