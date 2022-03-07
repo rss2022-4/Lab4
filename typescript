@@ -1,0 +1,186 @@
+Script started on Mon Mar  7 00:43:41 2022
+ls[1;31m~/racecar_ws~> [0;37mls
+build  devel  src
+[1;31m~/racecar_ws~> [0;37mcd src
+[1;31m~/racecar_ws/src~> [0;37mls
+CMakeLists.txt	Lab4	      intro_to_linux  rss_lab1
+Lab3_private	intro_to_git  ros_exercises   wall_follower_sim
+[1;31m~/racecar_ws/src~> [0;37mcd Lab4
+[1;31m~/racecar_ws/src/Lab4~> [0;37mls
+CMakeLists.txt	README.md  launch  media  msg  package.xml  scripts  typescript
+[1;31m~/racecar_ws/src/Lab4~> [0;37mcd scripts/
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37mls
+computer_vision   cone_sim_marker.py	     parking_controller.py
+cone_detector.py  homography_transformer.py
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37mcd computer_vision/                   vim cone_detector.py 
+[?1000h[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H[1;24r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[24;1H"cone_detector.py" 65L, 2640C[>c[?1000l[?1006h[?1002h[?1006l[?1002l[?1006h[?1002hP+q436f\P+q6b75\P+q6b64\P+q6b72\P+q6b6c\P+q2332\P+q2334\P+q2569\P+q2a37\P+q6b31\[1;1H[1m[33m  1 [m[1m[36m#!/[m[1m[36m[41musr[m[1m[36m/bin/[m[1m[36m[41menv[m[1m[36m python[m
+[1m[33m  2 
+  3 [m[1m[34mimport[m numpy [1m[33mas[m np
+[1m[33m  4 [m[1m[34mimport[m rospy
+[1m[33m  5 
+  6 [m[1m[34mimport[m cv2
+[1m[33m  7 [m[1m[34mfrom[m cv_bridge [1m[34mimport[m CvBridge, CvBridgeError
+[1m[33m  8 
+  9 [m[1m[34mfrom[m sensor_msgs.msg [1m[34mimport[m Image
+[1m[33m 10 [m[1m[34mfrom[m geometry_msgs.msg [1m[34mimport[m Point [1m[36m#geometry_[m[1m[36m[41mmsgs[m[1m[36m not in [m[1m[36m[41mCMake[m[1m[36m file[m
+[1m[33m 11 [m[1m[34mfrom[m visual_servoing.msg [1m[34mimport[m ConeLocationPixel
+[1m[33m 12 
+ 13 [m[1m[36m# import your color segmentation algorithm; call this function in [m[1m[36m[41mros[m[1m[36m_image__[m[14;1H[1m[33m    [m[1m[36mcallback![m
+[1m[33m 14 [m[1m[34mfrom[m computer_vision.color_segmentation [1m[34mimport[m cd_color_segmentation
+[1m[33m 15 
+ 16 
+ 17 [m[1m[33mclass[m [1m[36mConeDetector[m():
+[1m[33m 18 [m    [1m[35m"""[m
+[1m[33m 19 [m[1m[35m    A class for applying your cone detection algorithms to the real robot.[m
+[1m[33m 20 [m[1m[35m    Subscribes to: /zed/zed_node/[m[1m[35m[41mrgb[m[1m[35m/image_[m[1m[35m[41mrect[m[1m[35m_color (Image) : the live [m[1m[35m[46mRGBB[m[22;1H[1m[33m    [m[1m[35m image from the [m[1m[35m[46monboard[m[1m[35m ZED camera.[m
+[1m[33m 21 [m[1m[35m    Publishes to: /relative_cone_[m[1m[35m[41mpx[m[1m[35m ([m[1m[35m[41mConeLocationPixel[m[1m[35m) : the coordinates of[m[23;1H[1m[34m@@[m[1m[33m1[m[1m[34m@                                                                             [m[24;63H1,1[11CTop[1;5H[?12l[?25h[?25l[24;53H~@k[1;5H[24;53H   [2;5H[24;63H2,0-1[2;5H[?12l[?25h[?25l[24;53H~@k[2;5H[24;53H   [3;5H[24;63H3,1  [3;5H[?12l[?25h[?25l[24;53H~@k[3;5H[24;53H   [4;5H[24;63H4[4;5H[?12l[?25h[?25l[24;53H~@k[4;5H[24;53H   [5;5H[24;63H5,0-1[5;5H[?12l[?25h[?25l[24;53H~@k[5;5H[24;53H   [6;5H[24;63H6,1  [6;5H[?12l[?25h[?25l[24;53H~@k[6;5H[24;53H   [7;5H[24;63H7[7;5H[?12l[?25h[?25l[24;53H~@k[7;5H[24;53H   [8;5H[24;63H8,0-1[8;5H[?12l[?25h[?25l[24;53H~@k[8;5H[24;53H   [9;5H[24;63H9,1  [9;5H[?12l[?25h[?25l[24;53H~@k[9;5H[24;53H   [10;5H[24;63H10,1[10;5H[?12l[?25h[?25l[24;53H~@k[10;5H[24;53H   [11;5H[24;64H1[11;5H[?12l[?25h[?25l[24;53H~@k[11;5H[24;53H   [12;5H[24;64H2,0-1[12;5H[?12l[?25h[?25l[24;53H~@k[12;5H[24;53H   [13;5H[24;64H3,1  [13;5H[?12l[?25h[?25l[24;53H~@k[13;5H[24;53H   [15;5H[24;64H4[15;5H[?12l[?25h[?25l[24;53H~@k[15;5H[24;53H   [16;5H[24;64H5,0-1[16;5H[?12l[?25h[?25l[24;53H~@k[16;5H[24;53H   [17;5H[24;64H6[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H7,1  [18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[22;1H[1m[33m 21 [m[1m[35m    Publishes to: /relative_cone_[m[1m[35m[41mpx[m[1m[35m ([m[1m[35m[41mConeLocationPixel[m[1m[35m) : the coordinates off[m[23;1H[1m[33m    [m[1m[35m the cone in the image frame (units are pixels).[m[24;1H[K[24;63H18,1[11C2%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 22 [m[1m[35m    """[m[24;63H[K[24;63H19,1[11C4%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 23 [m    [1m[33mdef[m [1m[36m__init__[m(self):
+[1m[33m 24 [m[8C[1m[36m# toggle line follower vs cone [m[1m[36m[41mparker[m[24;63H[K[24;63H20,1[11C8%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 25 [m[8Cself.LineFollower = [1m[36mFalse[m
+[1m[33m 26 [m[24;63H[K[24;63H21,1[10C13%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 27 [m[8C[1m[36m# Subscribe to ZED camera [m[1m[36m[46mRGB[m[1m[36m frames[m[24;63H[K[24;63H22,1[10C15%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 28 [m[8Cself.cone_pub = rospy.Publisher([1m[35m"/relative_cone_[m[1m[35m[41mpx[m[1m[35m"[m, ConeLocationPixx[23;1H[1m[33m    [mel, queue_size=[1m[35m10[m)[24;63H[K[24;63H23,1[10C19%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H4[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 29 [m[8Cself.debug_pub = rospy.Publisher([1m[35m"/cone_debug_[m[1m[35m[41mimg[m[1m[35m"[m, Image, queue_sizz[23;1H[1m[33m    [me=[1m[35m10[m)[24;63H[K[24;63H25,1[10C23%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H6,0-1[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [16;5H[1;23r[1;1H[3M[1;24r[21;1H[1m[33m 30 [m[8Cself.image_sub = rospy.Subscriber([1m[35m"/zed/zed_node/[m[1m[35m[41mrgb[m[1m[35m/image_[m[1m[35m[41mrect[m[1m[35m_coloo[m[22;1H[1m[33m    [m[1m[35mr"[m, Image, self.image_callback)
+[1m[33m 31 [m[8Cself.bridge = CvBridge() [1m[36m# Converts between [m[1m[36m[41mROS[m[1m[36m images and [m[1m[36m[41mOpenCV[m[1m[36m Im[m[23;1H[1m[34m@@[m[1m[33m1[m[1m[34m@                                                                             [m[24;63H[K[24;63H27,1[10C27%[16;5H[?12l[?25h[?25l[24;53H~@k[16;5H[24;53H   [17;5H[24;64H8[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[21;1H[1m[33m 31 [m        self.bridge = CvBridge() [1m[36m# Converts between [m[1m[36m[41mROS[m[1m[36m images and [m[1m[36m[41mOpenCV[m[1m[36m Imm[m[22;1H[1m[33m    [m[1m[36mages[m
+[1m[33m 32 [m[24;63H[K[24;63H29,1[10C31%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [16;5H[1;23r[1;1H[3M[1;24r[21;1H[1m[33m 33 [m    [1m[33mdef[m [1m[36mimage_callback[m(self, image_msg):
+[1m[33m 34 [m[8C[1m[36m# Apply your imported color segmentation function ([m[1m[36m[41mcd[m[1m[36m_color_segmentaa[m[23;1H[1m[33m    [m[1m[36mtion) to the image [m[1m[36m[41mmsg[m[1m[36m here[m[24;63H[K[24;63H30,1[10C36%[16;5H[?12l[?25h[?25l[24;53H~@k[16;5H[24;53H   [17;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 35 [m[8C[1m[36m# From your bounding box, take the center pixel on the bottom[m[24;63H[K[24;63H31,1[10C38%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 36 [m[8C[1m[36m# (We know this pixel corresponds to a point on the ground plane)[m
+[1m[33m 37 [m[8C[1m[36m# publish this pixel (u, v) to the /relative_cone_[m[1m[36m[41mpx[m[1m[36m topic; the [m[1m[36m[41mhomo[m[23;1H[1m[34m@@[m[1m[33m7[m[1m[34m@                                                                             [m[24;63H[K[24;63H32,0-1[8C40%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H3,1  [18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[21;1H[1m[33m 37 [m        [1m[36m# publish this pixel (u, v) to the /relative_cone_[m[1m[36m[41mpx[m[1m[36m topic; the [m[1m[36m[41mhomoo[m[22;1H[1m[33m    [m[1m[36m[41mgraphy[m[1m[36m transformer will[m
+[1m[33m 38 [m[8C[1m[36m# convert it to the car frame.[m[24;63H[K[24;63H34,1[10C43%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 39 [m[24;63H[K[24;63H35,1[10C45%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 40 [m[8C[1m[36m#################################[m[24;63H[K[24;63H36,1[10C47%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 41 [m[8C[1m[36m# YOUR CODE HERE[m
+[1m[33m 42 [m[8C[1m[36m# detect the cone and publish its[m[24;63H[K[24;63H37,1[10C52%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 43 [m[8C[1m[36m# pixel location in the image.[m[24;63H[K[24;63H38,1[10C54%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 44 [m[8C[1m[36m# [m[1m[36m[41mvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv[m[24;63H[K[24;63H39,0-1[8C56%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 45 [m[8C[1m[36m#################################[m
+[1m[33m 46 [m[24;63H[K[24;63H40,1[10C59%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H1[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 47 [m[8Cimage = self.bridge.imgmsg_to_cv2(image_msg, [1m[35m"[m[1m[35m[41mbgr8[m[1m[35m"[m)
+[1m[33m 48 [m[8Ccone_boundingBox = cd_color_segmentation(image)[24;63H[K[24;63H42,1[10C63%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H3[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 49 [m[8C(top_left, bottom_right) = cone_boundingBox
+[1m[33m 50 [m[8CconeLocationPixel_msg = ConeLocationPixel()[24;63H[K[24;63H44,1[10C66%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H5[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 51 [m[8CconeLocationPixel_msg.u = (top_left[[1m[35m0[m]+bottom_right[[1m[35m0[m])/[1m[35m2.0[m
+[1m[33m 52 [m[8CconeLocationPixel_msg.v = bottom_right[[1m[35m1[m][24;63H[K[24;63H46,0-1[8C70%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H7,1  [18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 53 [m[8Cself.cone_pub.publish(coneLocationPixel_msg)[24;63H[K[24;63H48,1[10C72%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 54 [m[24;63H[K[24;63H49,1[10C75%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 55 [m[8Cdebug_msg = self.bridge.cv2_to_imgmsg(image, [1m[35m"[m[1m[35m[41mbgr8[m[1m[35m"[m)
+[1m[33m 56 [m[8Cself.debug_pub.publish(debug_msg)[24;63H[K[24;63H50,1[10C79%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H1[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 57 [m[24;63H[K[24;63H52,1[10C81%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 58 [m[24;63H[K[24;63H53,1[10C83%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [17;5H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 59 [m[1m[33mif[m __name__ == [1m[35m'__main__'[m:
+[1m[33m 60 [m    [1m[33mtry[m:[24;63H[K[24;63H54,0-1[8C88%[17;5H[?12l[?25h[?25l[24;53H~@k[17;5H[24;53H   [18;5H[24;64H5,1  [18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 61 [m[8Crospy.init_node([1m[35m'[m[1m[35m[41mConeDetector[m[1m[35m'[m, anonymous=[1m[36mTrue[m)[24;63H[K[24;63H56,1[10C90%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 62 [m[8CConeDetector()[24;63H[K[24;63H57,0-1[8C92%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 63 [m[8Crospy.spin()[24;63H[K[24;63H58,0-1[8C95%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 64 [m    [1m[33mexcept[m rospy.ROSInterruptException:[24;63H[K[24;63H59,1[10C97%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 65 [m[8C[1m[33mpass[m[24;63H[K[24;63H60,1[10CBot[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [19;5H[24;64H1[19;5H[?12l[?25h[?25l[24;53H~@k[19;5H[24;53H   [20;5H[24;64H2[20;5H[?12l[?25h[?25l[24;53H~@k[20;5H[24;53H   [21;5H[24;64H3[21;5H[?12l[?25h[?25l[24;53H~@k[21;5H[24;53H   [22;5H[24;64H4[22;5H[?12l[?25h[?25l[24;53H~@k[22;5H[24;53H   [23;5H[24;64H5[23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H~@k[23;5H[24;53H   [23;5H[?12l[?25h[?25l[24;53H^[[23;5H[24;53H  [23;5H[24;53H^[[23;5H[24;53H  [23;5H[?12l[?25h[?25l[24;53H:[23;5H[24;53H[K[24;1H:[?12l[?25hwq[?25l[?1006l[?1002l"cone_detector.py" 65L, 2640C written
+[?1l>[?12l[?25h[?1049l[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37m[Kls
+computer_vision   cone_sim_marker.py	     parking_controller.py
+cone_detector.py  homography_transformer.py
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37mcd computer_vision/
+[1;31m~/racecar_ws/src/Lab4/scripts/computer_vision~> [0;37mls
+__init__.py		cv_test.py	   test_images_citgo
+__init__.pyc		scores		   test_images_cone
+color_segmentation.py	sift_template.py   test_images_localization
+color_segmentation.pyc	sift_template.pyc
+[1;31m~/racecar_ws/src/Lab4/scripts/computer_vision~> [0;37mcd    vim color_segmentation.py
+[?1000h[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H[1;24r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[24;1H"color_segmentation.py" 86L, 3047C[>c[?1000l[?1006h[?1002h[?1006l[?1002l[?1006h[?1002hP+q436f\P+q6b75\P+q6b64\P+q6b72\P+q6b6c\P+q2332\P+q2334\P+q2569\P+q2a37\P+q6b31\[1;1H[1m[33m 66 [m    mask = cv2.inRange(hsv_img, light_orange, dark_orange)
+[1m[33m 67 [m    [1m[36m#image_print(mask)[m
+[1m[33m 68 
+ 69 [m    [1m[36m# Find [m[1m[36m[41mremaning[m[1m[36m contours, correspond to orange objects[m
+[1m[33m 70 [m    contours = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLEE[6;1H[1m[33m    [m)[[1m[35m1[m]
+[1m[33m 71 [m    [1m[36m#print('[m[1m[36m[41mnum[m[1m[36m contours', [m[1m[36m[41mlen[m[1m[36m(contours))[m
+[1m[33m 72 [m    [1m[36m#print(contours)[m
+[1m[33m 73 [m    largest_contour = get_largest_contour(contours)
+[1m[33m 74 [m    [1m[36m#print(largest_contour)[m
+[1m[33m 75 
+ 76 [m    [1m[36m# Draw boxes around the contours[m
+[1m[33m 77 [m    x, y, w, h = cv2.boundingRect(largest_contour)
+[1m[33m 78 [m    bounding_box = ((x, y), (x+w, y+h))
+[1m[33m 79 [m    [1m[33mreturn[m bounding_box
+[1m[33m 80 
+ 81 [m[1m[33mif[m __name__ == [1m[35m'__main__'[m:
+[1m[33m 82 [m    cone_image = cv2.imread(cone_template_path)
+[1m[33m 83 [m    [1m[36m#image_print(cone_image)[m
+[1m[33m 84 [m    boundary_box = cd_color_segmentation(cone_image)
+[1m[33m 85 [m    cv2.rectangle(cone_image, boundary_box[[1m[35m0[m], boundary_box[[1m[35m1[m], ([1m[35m0[m, [1m[35m255[m, [1m[35m0[m),,[22;1H[1m[33m    [m[1m[35m2[m)
+[1m[33m 86 [m    image_print(cone_image)[24;63H84,21[9CBot[20;25H[?12l[?25h[?25l[1;23r[1;1H[4L[1;24r[1;1H[1m[33m 63 [m    filtered_img = cv2.dilate(cv2.erode(img, kernel, iterations=[1m[35m1[m), kernel,  [2;1H[1m[33m    [miterations=[1m[35m1[m)
+[1m[33m 64 [m    [1m[36m#image_print(filtered_[m[1m[36m[41mimg[m[1m[36m)[m
+[1m[33m 65 [m    hsv_img = cv2.cvtColor(filtered_img, cv2.COLOR_RGB2HSV)[18;25H[46m([mx, y[46m)[m[24;1H[K[24;63H78,21[9C95%[18;25H[?12l[?25h[?25l[1;23r[1;1H[3L[1;24r[1;1H[1m[33m 60 [m    dark_orange = ([1m[35m150[m, [1m[35m255[m, [1m[35m255[m)
+[1m[33m 61 [m    kernel = np.ones(([1m[35m7[m, [1m[35m7[m), np.uint8)
+[1m[33m 62 [m[21;25H(x, y)[24;63H[K[24;63H75,0-1[8C90%[18;5H[?12l[?25h[?25l[1;23r[1;1H[3L[1;24r[1;1H[1m[33m 57 
+ 58 [m    [1m[36m# Create mask for orange cone. [m[1m[36m[41mHSV[m[1m[36m [m[1m[36m[41mthreshods[m
+[1m[33m 59 [m    light_orange = ([1m[35m70[m, [1m[35m180[m, [1m[35m150[m)[18;15H[1m[36m[46m([m[1m[36mcontours[m[1m[36m[46m)[m[24;63H[K[24;63H72,20[9C86%[18;24H[?12l[?25h[?25l[1;23r[1;1H[5L[1;24r[1;1H[1m[33m 54 [m[1m[35m    Return:[m
+[1m[33m 55 [m[1m[35m        [m[1m[35m[41mbbox[m[1m[35m: (([m[1m[35m[41mx1[m[1m[35m, [m[1m[35m[41my1[m[1m[35m), ([m[1m[35m[41mx2[m[1m[35m, [m[1m[35m[41my2[m[1m[35m)); the bounding box of the cone, unit in [m[1m[35m[41mpxx[m[3;1H[1m[33m    [m[1m[35m                                                                    ([m[1m[35m[41mx1[m[1m[35m, [m[1m[35m[41my1[m[1m[35m))[m[4;1H[1m[33m    [m[1m[35m is the top left of the [m[1m[35m[41mbbox[m[1m[35m and ([m[1m[35m[41mx2[m[1m[35m, [m[1m[35m[41my2[m[1m[35m) is the bottom right of the [m[1m[35m[41mbbox[m
+[1m[33m 56 [m[1m[35m        """[m[23;15H[1m[36m(contours)[m[24;63H[K[24;63H68,4[10C79%[18;8H[?12l[?25h[?25l[1;23r[1;1H[4L[1;24r[1;1H[1m[33m 51 [m[1m[35m    Input:[m
+[1m[33m 52 [m[1m[35m        [m[1m[35m[41mimg[m[1m[35m: [m[1m[35m[41mnp[m[1m[35m.3[m[1m[35m[41mdarray[m[1m[35m; the input image with a cone to be detected. [m[1m[35m[41mBGR[m[1m[35m.[m
+[1m[33m 53 [m[1m[35m        [m[1m[35m[44mtemplate[m[1m[35m_file_path; Not required, but can optionally be used to autoo[m[4;1H[1m[33m    [m[1m[35mmate setting hue filter values.[m[24;63H[K[24;63H64,21[9C74%[18;25H[?12l[?25h[?25l[1;23r[1;1H[3L[1;24r[1;1H[1m[33m 48 [m[1m[33mdef[m [1m[36mcd_color_segmentation[m(img, template=[1m[36mNone[m):
+[1m[33m 49 [m    [1m[35m"""[m
+[1m[33m 50 [m[1m[35m    Implement the cone detection using color segmentation algorithm[m[24;63H[K[24;63H62,0-1[8C70%[18;5H[?12l[?25h[?25l[1;23r[1;1H[3M[1;24r[21;1H[1m[33m 67 [m    [1m[36m#image_print(mask)[m
+[1m[33m 68 
+ 69 [m    [1m[36m# Find [m[1m[36m[41mremaning[m[1m[36m contours, correspond to orange objects[m[24;63H[K[24;63H62,0-1[8C74%[15;5H[?12l[?25h[?25l[1;23r[1;1H[4M[1;24r[20;1H[1m[33m 70 [m    contours = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLEE[21;1H[1m[33m    [m)[[1m[35m1[m]
+[1m[33m 71 [m    [1m[36m#print('[m[1m[36m[41mnum[m[1m[36m contours', [m[1m[36m[41mlen[m[1m[36m(contours))[m
+[1m[33m 72 [m    [1m[36m#print(contours)[m[24;63H[K[24;63H62,0-1[8C79%[11;5H[?12l[?25h[?25l[1;23r[1;1H[5M[1;24r[19;1H[1m[33m 73 [m    largest_contour = get_largest_contour(contours)
+[1m[33m 74 [m    [1m[36m#print(largest_contour)[m
+[1m[33m 75 
+ 76 [m    [1m[36m# Draw boxes around the contours[m
+[1m[33m 77 [m    x, y, w, h = cv2.boundingRect(largest_contour)[24;63H[K[24;63H62,0-1[8C86%[6;5H[?12l[?25h[?25l[1;23r[1;1H[3M[1;24r[21;1H[1m[33m 78 [m    bounding_box = ((x, y), (x+w, y+h))
+[1m[33m 79 [m    [1m[33mreturn[m bounding_box
+[1m[33m 80 [m[24;63H[K[24;63H64,21[9C90%[6;25H[?12l[?25h[?25l[1;23r[1;1H[3M[1;24r[21;1H[1m[33m 81 [m[1m[33mif[m __name__ == [1m[35m'__main__'[m:
+[1m[33m 82 [m    cone_image = cv2.imread(cone_template_path)
+[1m[33m 83 [m    [1m[36m#image_print(cone_image)[m[24;63H[K[24;63H67,21[9C95%[6;25H[?12l[?25h[?25l[1;23r[1;1H[4M[1;24r[20;1H[1m[33m 84 [m    boundary_box = cd_color_segmentation(cone_image)
+[1m[33m 85 [m    cv2.rectangle(cone_image, boundary_box[[1m[35m0[m], boundary_box[[1m[35m1[m], ([1m[35m0[m, [1m[35m255[m, [1m[35m0[m),,[22;1H[1m[33m    [m[1m[35m2[m)
+[1m[33m 86 [m    image_print(cone_image)[24;63H[K[24;63H71,21[9CBot[7;25H[?12l[?25h[?25l[1;23r[1;1H[4L[1;24r[1;1H[1m[33m 63 [m    filtered_img = cv2.dilate(cv2.erode(img, kernel, iterations=[1m[35m1[m), kernel,  [2;1H[1m[33m    [miterations=[1m[35m1[m)
+[1m[33m 64 [m    [1m[36m#image_print(filtered_[m[1m[36m[41mimg[m[1m[36m)[m
+[1m[33m 65 [m    hsv_img = cv2.cvtColor(filtered_img, cv2.COLOR_RGB2HSV)[24;63H[K[24;63H71,21[9C95%[11;25H[?12l[?25h[?25l[1;23r[1;1H[3L[1;24r[1;1H[1m[33m 60 [m    dark_orange = ([1m[35m150[m, [1m[35m255[m, [1m[35m255[m)
+[1m[33m 61 [m    kernel = np.ones(([1m[35m7[m, [1m[35m7[m), np.uint8)
+[1m[33m 62 [m[24;63H[K[24;63H71,21[9C90%[14;25H[?12l[?25h[?25l[24;64H0,17[12;21H[?12l[?25h[?25l[24;53H2[12;22H[7mv[m[58CEE[13;1H[1m[33m [m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H2[12;22H[24;63H70,18[9C90%[12;22H[?12l[?25h[?25l[24;53H3[12;23H[7m2[m[57CEE[13;1H[1m[33m [m[24;67H9[12;23H[?12l[?25h[?25l[24;53H5[12;25H[7m.f[m[55CEE[13;1H[1m[33m [m[24;66H21[12;25H[?12l[?25h[?25l[24;53H6[12;26H[7mi[m[54CEE[13;1H[1m[33m [m[24;67H2[12;26H[?12l[?25h[?25l[24;53H7[12;27H[7mn[m[53CEE[13;1H[1m[33m [m[24;67H3[12;27H[?12l[?25h[?25l[24;53H8[12;28H[7md[m[52CEE[13;1H[1m[33m [m[24;67H4[12;28H[?12l[?25h[?25l[24;53H9[12;29H[7mC[m[51CEE[13;1H[1m[33m [m[24;67H5[12;29H[?12l[?25h[?25l[24;53H10[12;30H[7mo[m[50CEE[13;1H[1m[33m [m[24;67H6[12;30H[?12l[?25h[?25l[24;54H1[12;31H[7mn[m[49CEE[13;1H[1m[33m [m[24;67H7[12;31H[?12l[?25h[?25l[24;54H2[12;32H[7mt[m[48CEE[13;1H[1m[33m [m[24;67H8[12;32H[?12l[?25h[?25l[24;54H3[12;33H[7mo[m[47CEE[13;1H[1m[33m [m[24;67H9[12;33H[?12l[?25h[?25l[24;54H4[12;34H[7mu[m[46CEE[13;1H[1m[33m [m[24;66H30[12;34H[?12l[?25h[?25l[46CEE[13;1H[1m[33m [12;34H[?12l[?25h[?25l[m[24;53H29[12;49H[12;34H[7mrs(mask, cv2.RE[m[31CEE[13;1H[1m[33m [m[24;66H45[12;49H[?12l[?25h[?25l[31CEE[13;1H[1m[33m [12;49H[?12l[?25h[?25l[m[24;53H36[12;55H[12;20H[7mc[28CTR_LIS[m[25CEE[13;1H[1m[33m [m[24;66H51[12;55H[?12l[?25h[?25l[25CEE[13;1H[1m[33m [12;55H[?12l[?25h[?25l[m[24;53H  [13;8H[12;20Hcv2.findContours(mask, cv2.RETR_LIS[25CEE[13;1H[1m[33m [m[4C[46m[[1C][m[24;1H[K[24;63H70,80[9C90%[13;8H[?12l[?25h[?25l[24;53H3[13;6H[1C[1m[7m[35m1[m[7m][m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H3[13;6H[24;63H70,78[9C90%[13;6H[?12l[?25h[?25l[?12l[?25h[?25l[24;53H [12;52H[28CEE[13;1H[1m[33m [m[4C[[1m[35m1[m][24;1H[K[24;63H70,48[9C90%[12;52H[?12l[?25h[?25l[24;53H9[12;55H[12;47H[7mRETR_LIS[m[25CEE[13;1H[1m[33m [m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H9[12;55H[24;63H70,51[9C90%[12;55H[?12l[?25h[?25l[25CEE[13;1H[1m[33m [12;55H[?12l[?25h[?25l[m[24;53H [12;64H[12;47HRETR_LIS[25CEE[13;1H[1m[33m [m[24;1H[K[24;63H70,60[9C90%[12;64H[?12l[?25h[?25l[24;53H19[12;80H[12;62H[7mCHAIN_APPROX_SIMPL[mEE[13;1H[1m[33m [m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H19[12;80H[24;63H70,76[9C90%[12;80H[?12l[?25h[?25lEE[13;1H[1m[33m [12;80H[?12l[?25h[?25l[m[24;53H  [6;12H[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 58 [m    [1m[36m# Create mask for orange cone. [m[1m[36m[41mHSV[m[1m[36m [m[1m[36m[41mthreshods[m
+[1m[33m 59 [m    light_orange = ([1m[35m70[m, [1m[35m180[m, [1m[35m150[m)[14;62HCHAIN_APPROX_SIMPLEE[15;1H[1m[33m [m[24;1H[K[24;63H63,8[10C87%[6;12H[?12l[?25h[?25l[24;53H3[4;16H=[7m np.ones(([m[1m[7m[35m7[m[7m, [m[1m[7m[35m7[m[7m), np.uint8) [5;5H [6;5H    filt[m[67C  [7;1H[1m[33m [m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H3[4;16H[24;63H61,12[9C87%[4;16H[?12l[?25h[?25l[3C np[24;67H5[4;19H[?12l[?25h[?25l[6C.ones[46m([m[24;66H21[4;25H[?12l[?25h[?25l[5C(([1m[35m7[m, [1m[35m7[m[7m)[m[24;67H6[4;30H[?12l[?25h[?25l[1C[46m([4C)[m[24;67H7[4;31H[?12l[?25h[?25l[1C([4C),[24;67H8[4;32H[?12l[?25h[?25l, [24;67H9[4;33H[?12l[?25h[?25l[24;53H2[5;5H[4;34Hnp.uint8)[4;43H[K[5;5H[K[24;64H2,0-1[5;5H[?12l[?25h[?25l[?12l[?25h[?25l[?12l[?25h[?25l[?12l[?25h[?25l[24;53H [6;27H[6;5H    filt[67C  [7;1H[1m[33m [m[24;1H[K[24;63H63,23[9C87%[6;27H[?12l[?25h[?25l[24;53H4[6;30H[7m.di[m[50C  [7;1H[1m[33m [m[24;1H[1m-- VISUAL --[m[24;53H[K[24;53H4[6;30H[24;63H63,26[9C87%[6;30H[?12l[?25h[?25l[24;53H7[6;33H[7mlat[m[47C  [7;1H[1m[33m [m[24;67H9[6;33H[?12l[?25h[?25l[24;53H11[6;37H[7me(cv[m[43C  [7;1H[1m[33m [m[24;66H33[6;37H[?12l[?25h[?25l[24;54H3[6;39H[7m2.[m[41C  [7;1H[1m[33m [m[24;67H5[6;39H[?12l[?25h[?25l[41C  [7;1H[1m[33m [6;39H[?12l[?25h[?25l[m[24;53H^[[6;39H[24;53H13[6;39H[24;55H^[[6;39H[24;53H    [6;39H[6;27H.dilate(cv2.[41C  [7;1H[1m[33m [m[24;1H[K[24;63H63,35[9C87%[6;39H[?12l[?25h[?25l[24;53H:[6;39H[24;53H[K[24;1H:[?12l[?25hwq[?25l[?1006l[?1002l"color_segmentation.py" 86L, 3047C written
+[?1l>[?12l[?25h[?1049l[1;31m~/racecar_ws/src/Lab4/scripts/computer_vision~> [0;37m[Kcd ..
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37m[Kcd ..
+[1;31m~/racecar_ws/src/Lab4~> [0;37mgit pull
+Enter passphrase for key '/home/racecar/.ssh/id_ed25519': 
+remote: Enumerating objects: 28, done.[K
+remote: Counting objects:   3% (1/28)[Kremote: Counting objects:   7% (2/28)[Kremote: Counting objects:  10% (3/28)[Kremote: Counting objects:  14% (4/28)[Kremote: Counting objects:  17% (5/28)[Kremote: Counting objects:  21% (6/28)[Kremote: Counting objects:  25% (7/28)[Kremote: Counting objects:  28% (8/28)[Kremote: Counting objects:  32% (9/28)[Kremote: Counting objects:  35% (10/28)[Kremote: Counting objects:  39% (11/28)[Kremote: Counting objects:  42% (12/28)[Kremote: Counting objects:  46% (13/28)[Kremote: Counting objects:  50% (14/28)[Kremote: Counting objects:  53% (15/28)[Kremote: Counting objects:  57% (16/28)[Kremote: Counting objects:  60% (17/28)[Kremote: Counting objects:  64% (18/28)[Kremote: Counting objects:  67% (19/28)[Kremote: Counting objects:  71% (20/28)[Kremote: Counting objects:  75% (21/28)[Kremote: Counting objects:  78% (22/28)[Kremote: Counting objects:  82% (23/28)[Kremote: Counting objects:  85% (24/28)[Kremote: Counting objects:  89% (25/28)[Kremote: Counting objects:  92% (26/28)[Kremote: Counting objects:  96% (27/28)[Kremote: Counting objects: 100% (28/28)[Kremote: Counting objects: 100% (28/28), done.[K
+remote: Compressing objects:  12% (1/8)[Kremote: Compressing objects:  25% (2/8)[Kremote: Compressing objects:  37% (3/8)[Kremote: Compressing objects:  50% (4/8)[Kremote: Compressing objects:  62% (5/8)[Kremote: Compressing objects:  75% (6/8)[Kremote: Compressing objects:  87% (7/8)[Kremote: Compressing objects: 100% (8/8)[Kremote: Compressing objects: 100% (8/8), done.[K
+remote: Total 20 (delta 16), reused 16 (delta 12), pack-reused 0[K
+Unpacking objects:   5% (1/20)   Unpacking objects:  10% (2/20)   Unpacking objects:  15% (3/20)   Unpacking objects:  20% (4/20)   Unpacking objects:  25% (5/20)   Unpacking objects:  30% (6/20)   Unpacking objects:  35% (7/20)   Unpacking objects:  40% (8/20)   Unpacking objects:  45% (9/20)   Unpacking objects:  50% (10/20)   Unpacking objects:  55% (11/20)   Unpacking objects:  60% (12/20)   Unpacking objects:  65% (13/20)   Unpacking objects:  70% (14/20)   Unpacking objects:  75% (15/20)   Unpacking objects:  80% (16/20)   Unpacking objects:  85% (17/20)   Unpacking objects:  90% (18/20)   Unpacking objects:  95% (19/20)   Unpacking objects: 100% (20/20)   Unpacking objects: 100% (20/20), done.
+From github.com:rss2022-4/Lab4
+   a2a1835..fcf5606  master     -> origin/master
+Updating a2a1835..fcf5606
+Fast-forward
+ scripts/computer_vision/sift_template.py | 126 [32m+++++++++++++++++++++[m[31m----------[m
+ 1 file changed, 87 insertions(+), 39 deletions(-)
+[1;31m~/racecar_ws/src/Lab4~> [0;37mls
+CMakeLists.txt	README.md  launch  media  msg  package.xml  scripts  typescript
+[1;31m~/racecar_ws/src/Lab4~> [0;37mcd sr cripts/l 
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37mls
+computer_vision   cone_sim_marker.py	     parking_controller.py
+cone_detector.py  homography_transformer.py
+[1;31m~/racecar_ws/src/Lab4/scripts~> [0;37mvim parking_controller.py 
+[?1000h[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H[1;24r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[24;1H"parking_controller.py" 103L, 3724C[>c[?1000l[?1006h[?1002h[?1006l[?1002l[?1006h[?1002hP+q436f\P+q6b75\P+q6b64\P+q6b72\P+q6b6c\P+q2332\P+q2334\P+q2569\P+q2a37\P+q6b31\[1;1H[1m[33m 48 [m[8C[1m[33melif[m distance < self.dist_thresh [1m[33mor[m [1m[36mabs[m(theta) > self.angle_thresh:
+[1m[33m 49 [m[12Cdrive_cmd = self.reversal(theta, drive_cmd)
+[1m[33m 50 [m[8C[1m[36m# Within reasonable area. Use controller[m
+[1m[33m 51 [m[8C[1m[33melse[m:
+[1m[33m 52 [m[12Cdrive_cmd = self.drive(theta, drive_cmd)
+[1m[33m 53 
+ 54 [m[8Cself.drive_pub.publish(drive_cmd)
+[1m[33m 55 [m[8Cself.error_publisher()
+[1m[33m 56 
+ 57 [m    [1m[33mdef[m [1m[36mstop[m(self, drive_cmd):
+[1m[33m 58 [m[8Cdrive_cmd.drive.speed = [1m[35m0[m
+[1m[33m 59 [m[8Cdrive_cmd.drive.steering_angle = [1m[35m0[m
+[1m[33m 60 [m[8C[1m[33mreturn[m drive_cmd
+[1m[33m 61 
+ 62 [m    [1m[33mdef[m [1m[36mreversal[m(self, theta, drive_cmd):
+[1m[33m 63 [m[8Cdrive_cmd.drive.steering_angle = -theta
+[1m[33m 64 [m[8Cdrive_cmd.drive.speed = -[1m[36mabs[m(drive_cmd.drive.speed)
+[1m[33m 65 [m[8C[1m[33mreturn[m drive_cmd
+[1m[33m 66 
+ 67 [m    [1m[33mdef[m [1m[36mdrive[m(self, theta, drive_cmd):
+[1m[33m 68 [m[8Cdrive_cmd.drive.speed = [1m[36mabs[m(drive_cmd.drive.speed)
+[1m[33m 69 [m[8Cdrive_cmd.drive.steering_angle = theta + self.kd*(theta - self.previi[23;1H[1m[33m    [mous_angle)[24;63H59,24[9C58%[12;28H[?12l[?25h[?25l[24;53H~@k[12;28H[24;53H   [11;28H[24;64H8[11;28H[?12l[?25h[?25l[24;53H~@k[11;28H[24;53H   [10;28H[24;64H7[10;28H[?12l[?25h[?25l[24;53H~@k[10;28H[24;53H   [9;5H[24;64H6,0-1[9;5H[?12l[?25h[?25l[24;53H~@k[9;5H[24;53H   [8;28H[24;64H5,24 [8;28H[?12l[?25h[?25l[24;53H~@k[8;28H[24;53H   [7;28H[24;64H4[7;28H[?12l[?25h[?25l[24;53H~@k[7;28H[24;53H   [6;5H[24;64H3,0-1[6;5H[?12l[?25h[?25l[24;53H~@k[6;5H[24;53H   [7;28H[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 47 [m[8C[1m[36m# Either too close or at an extreme angle. Correct by executing revee[m[2;1H[1m[33m    [m[1m[36mrsal[m[24;1H[K[24;63H52,24[9C56%[7;28H[?12l[?25h[?25l[24;53H~@k[7;28H[24;53H   [6;17H[24;64H1,13[6;17H[?12l[?25h[?25l[24;53H~@k[6;17H[24;53H   [6;28H[1;23r[1;1H[L[1;24r[1;1H[1m[33m 46 [m[12Cdrive_cmd = self.stop(drive_cmd)[24;63H[K[24;63H50,24[9C55%[6;28H[?12l[?25h[?25l[24;53H~@k[6;28H[24;53H   [7;28H[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 45 [m[8C[1m[33mif[m [1m[36mabs[m(distance - self.dist_thresh) < self.parking_epsilon [1m[33mand[m thetaa[2;1H[1m[33m    [m < self.angle_epsilon:[24;63H[K[24;63H49,24[9C53%[7;28H[?12l[?25h[?25l[24;53H~@k[7;28H[24;53H   [6;28H[24;64H8[6;28H[?12l[?25h[?25l[24;53H~@k[6;28H[24;53H   [6;28H[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 44 [m[8C[1m[36m# Within tolerable desired distance and angle with respect to the coo[m[2;1H[1m[33m    [m[1m[36mne[m[24;63H[K[24;63H47,24[9C51%[6;28H[?12l[?25h[?25l[24;53H~@k[6;28H[24;53H   [6;28H[1;23r[1;1H[L[1;24r[1;1H[1m[33m 43 [m[24;63H[K[24;63H46,24[9C50%[6;28H[?12l[?25h[?25l[24;53H~@k[6;28H[24;53H   [6;28H[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 41 [m[8Ctheta = np.arctan2(self.relative_y, self.relative_x)
+[1m[33m 42 [m[8Cdistance = np.sqrt(self.relative_x**[1m[35m2[m + self.relative_y**[1m[35m2[m)[24;63H[K[24;63H45,24[9C48%[6;28H[?12l[?25h[?25l[1;23r[1;1H[2L[1;24r[1;1H[1m[33m 39 [m[8Cdrive_cmd = self.initialize_drive_data()
+[1m[33m 40 [m[24;63H[K[24;63H44,24[9C45%[6;28H[?12l[?25h[?25l[24;53H~@k[6;28H[24;53H   [6;12H[1;23r[1;1H[L[1;24r[1;1H[1m[33m 38 [m[8Cself.relative_y = msg.y_pos[24;63H[K[24;63H43,8[10C44%[6;12H[?12l[?25h[?25l[24;53H~@k[6;12H[24;53H   [7;28H[24;64H4,24[7;28H[?12l[?25h[?25l[24;53H~@k[7;28H[24;53H   [9;28H[24;64H5[9;28H[?12l[?25h[?25l[24;53H~@k[9;28H[24;53H   [11;28H[24;64H6[11;28H[?12l[?25h[?25l[24;53H~@k[11;28H[24;53H   [12;28H[24;64H7[12;28H[?12l[?25h[?25l[24;53H~@k[12;28H[24;53H   [14;28H[24;64H8[14;28H[?12l[?25h[?25l[24;53H~@k[14;28H[24;53H   [15;28H[24;64H9[15;28H[?12l[?25h[?25l[24;53H~@k[15;28H[24;53H   [16;28H[24;63H50[16;28H[?12l[?25h[?25l[24;53H~@k[16;28H[24;53H   [17;17H[24;64H1,13[17;17H[?12l[?25h[?25l[24;53H~@k[17;17H[24;53H   [18;28H[24;64H2,24[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 58 [m[8Cdrive_cmd.drive.speed = [1m[35m0[m[24;63H[K[24;63H53,0-1[8C45%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 59 [m[8Cdrive_cmd.drive.steering_angle = [1m[35m0[m[24;63H[K[24;63H54,24[9C46%[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 60 [m[8C[1m[33mreturn[m drive_cmd[24;63H[K[24;63H55,24[9C48%[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;5H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 61 [m[24;63H[K[24;63H56,0-1[8C49%[18;5H[?12l[?25h[?25l[24;53H~@k[18;5H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 62 [m    [1m[33mdef[m [1m[36mreversal[m(self, theta, drive_cmd):[24;63H[K[24;63H57,24[9C50%[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 63 [m[8Cdrive_cmd.drive.steering_angle = -theta[24;63H[K[24;63H58,24[9C51%[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [17;28H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 64 [m[8Cdrive_cmd.drive.speed = -[1m[36mabs[m(drive_cmd.drive.speed)
+[1m[33m 65 [m[8C[1m[33mreturn[m drive_cmd[24;63H[K[24;63H59,24[9C53%[17;28H[?12l[?25h[?25l[24;53H~@k[17;28H[24;53H   [18;28H[24;63H60[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [17;8H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 66 
+ 67 [m    [1m[33mdef[m [1m[36mdrive[m(self, theta, drive_cmd):[24;63H[K[24;63H61,4[10C55%[17;8H[?12l[?25h[?25l[24;53H~@k[17;8H[24;53H   [18;28H[24;64H2,24[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 68 [m[8Cdrive_cmd.drive.speed = [1m[36mabs[m(drive_cmd.drive.speed)[24;63H[K[24;63H63,24[9C56%[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [17;28H[1;23r[1;1H[2M[1;24r[22;1H[1m[33m 69 [m[8Cdrive_cmd.drive.steering_angle = theta + self.kd*(theta - self.previi[23;1H[1m[33m    [mous_angle)[24;63H[K[24;63H64,24[9C58%[17;28H[?12l[?25h[?25l[24;53H~@k[17;28H[24;53H   [18;28H[24;64H5[18;28H[?12l[?25h[?25l[24;53H~@k[18;28H[24;53H   [18;8H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 70 [m[8Cself.previous_steering_angle = theta[24;63H[K[24;63H66,4[10C59%[18;8H[?12l[?25h[?25l[24;53H~@k[18;8H[24;53H   [18;28H[1;23r[23;1H
+[1;24r[23;1H[1m[33m 71 [m[8C[1m[33mreturn[m drive_cm

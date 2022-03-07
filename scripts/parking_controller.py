@@ -26,37 +26,49 @@ class ParkingController():
         self.parking_distance = .75 # meters; try playing with this number!
         self.relative_x = 0
         self.relative_y = 0
-        self.dist_thresh = self.parking_distance + 0.5 # parameterize later
+        self.dist_thresh = self.parking_distance + 0 # parameterize later
         self.angle_thresh = np.pi/4
+        self.parking_epsilon = 0.1
+        self.angle_epsilon = 5*np.pi/180.
         self.previous_angle = 0
         self.kd = 0
 
     def relative_cone_callback(self, msg):
         self.relative_x = msg.x_pos
         self.relative_y = msg.y_pos
-        drive_cmd = AckermannDriveStamped()
-
-        #pseudocode
-        #if relative distance too close to car or extreme angle
-            # execute reversal. Function of theta to determine which direction to do reversal in
-        # else
-            # use relative angle as steering angle plus some damping with derivative term to avoid overshoot
-            # and oscillation
+        drive_cmd = self.initialize_drive_data()
         
         theta = np.arctan2(self.relative_y, self.relative_x)
-        if np.sqrt(self.relative_x**2 + self.relative_y**2) < self.dist_thresh or abs(theta) > angle_thresh:
-            self.revesal(theta)
+        distance = np.sqrt(self.relative_x**2 + self.relative_y**2)
+        
+        # Within tolerable desired distance and angle with respect to the cone
+        if abs(distance - self.dist_thresh) < self.parking_epsilon and theta < self.angle_epsilon:
+            drive_cmd = self.stop(drive_cmd)
+        # Either too close or at an extreme angle. Correct by executing reversal
+        elif distance < self.dist_thresh or abs(theta) > self.angle_thresh:
+            drive_cmd = self.reversal(theta, drive_cmd)
+        # Within reasonable area. Use controller
         else:
-            self.drive_cmd.speed = abs(self.drive_cmd.speed)
-            self.drive_cmd.steering_angle = theta + self.kd*(theta - self.previous_angle)
-            self.previous_angle = theta
+            drive_cmd = self.drive(theta, drive_cmd)
 
         self.drive_pub.publish(drive_cmd)
         self.error_publisher()
 
-    def reversal(self, theta):
-        self.drive_cmd.steering_angle(-theta)
-        self.drive_cmd.speed = -abs(self.drive_cmd.speed)
+    def stop(self, drive_cmd):
+        drive_cmd.drive.speed = 0
+        drive_cmd.drive.steering_angle = 0
+        return drive_cmd
+    
+    def reversal(self, theta, drive_cmd):
+        drive_cmd.drive.steering_angle = -theta
+        drive_cmd.drive.speed = -abs(drive_cmd.drive.speed)
+        return drive_cmd
+    
+    def drive(self, theta, drive_cmd):
+        drive_cmd.drive.speed = abs(drive_cmd.drive.speed)
+        drive_cmd.drive.steering_angle = theta + self.kd*(theta - self.previous_angle)
+        self.previous_steering_angle = theta
+        return drive_cmd
 
     def error_publisher(self):
         """
@@ -76,6 +88,11 @@ class ParkingController():
         #################################
         
         self.error_pub.publish(error_msg)
+
+    def initialize_drive_data(self):
+        drive_data = AckermannDriveStamped()
+        drive_data.drive.speed = 1
+        return drive_data
 
 if __name__ == '__main__':
     try:
