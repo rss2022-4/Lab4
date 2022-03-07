@@ -86,6 +86,10 @@ def cd_sift_ransac(img, template):
 		#obtain bounding box mins/maxs
 		mins = np.amin(bounding_box_coors,axis=0)
 		maxs = np.amax(bounding_box_coors,axis=0)
+
+		print(bounding_box_coors)
+		print(mins)
+		print(maxs)
 		
 		x_min,y_min = mins[0], mins[1]
 		x_max,y_max = maxs[0], maxs[1]
@@ -116,7 +120,6 @@ def cd_template_matching(img, template):
 				(x1, y1) is the bottom left of the bbox and (x2, y2) is the top right of the bbox
 	"""
 	#make images greyscale
-	template = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	template_canny = cv2.Canny(template, 50, 200)
 
 	# Perform Canny Edge detection on test image
@@ -126,12 +129,8 @@ def cd_template_matching(img, template):
 	# Get dimensions of template
 	(img_height, img_width) = img_canny.shape[:2]
 
-	# Keep track of best-fit match
+	# Keep track of best-fit match and associated values
 	best_match = None
-
-	#key: max_value value: [location in image (x,y), height of template h,width of template w, scale, res] 
-	matches_dict = {} 
-	results = []
 
 	# Loop over different scales of image
 	for scale in np.linspace(1.5, .5, 50):
@@ -145,31 +144,29 @@ def cd_template_matching(img, template):
 		########## YOUR CODE STARTS HERE ##########
 		# Use OpenCV template matching functions to find the best match
 		# across template scales.
-		else:
-			#define the matching method
-			match_method = cv2.TM_CCORR_NORMED
-			#get results of matching with this scale
-			res = cv2.matchTemplate(grey_img, resized_template, match_method)
-			# #normalize reults
-			# normalized_res = cv2.normalize(res,res, 0, 1, cv2.NORM_MINMAX, -1 )
+		
+		#define the matching method
+		match_method = cv2.TM_CCORR_NORMED
+		#get results of matching with this scale
+		res = cv2.matchTemplate(img_canny,resized_template, match_method)
+		# #normalize reults
+		# normalized_res = cv2.normalize(res,res, 0, 1, cv2.NORM_MINMAX, -1 )
 
-			#_maxVal=highest intensity in image corresponds to the best match
-			_minVal, _maxVal, minLoc, maxLoc = cv2.minMaxLoc(res, None)
-			#add best match to dictionary and list
-			matches_dict[_maxVal] = [maxLoc,h,w, scale, res] 
-			results.append(_maxVal)
+		#_maxVal=highest intensity in image corresponds to the best match
+		_minVal, _maxVal, minLoc, maxLoc = cv2.minMaxLoc(res)
+		#add best match to dictionary and list
 
-		#get key with maximum  value
-		key = max(results)
-		loc,height,width,scale,res = matches_dict[key]
+		if best_match is None or _maxVal > best_match:
+			best_match = _maxVal
+			x1 = maxLoc[0]
+			y1 = maxLoc[1]
+			x2 = x1+w
+			y2 = y1+h
 
-		x1, y1 = loc[0],loc[1]
-		x2, y2 = loc[0] + w, loc[1] + h
-
-		# Remember to resize the bounding box using the highest scoring scale
-		# x1,y1 pixel will be accurate, but x2,y2 needs to be correctly scaled
-		bounding_box = ((x1,y1),(x2,y2))
-		########### YOUR CODE ENDS HERE ###########
+	# Remember to resize the bounding box using the highest scoring scale
+	# x1,y1 pixel will be accurate, but x2,y2 needs to be correctly scaled
+	bounding_box = ((x1,y1),(x2,y2))
+	########### YOUR CODE ENDS HERE ###########
 
 	return bounding_box
 
