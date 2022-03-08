@@ -18,7 +18,7 @@ class LineController():
             self.relative_cone_callback)
 
         DRIVE_TOPIC = rospy.get_param("~drive_topic") # set in launch file; different for simulator vs racecar
-        self.DRIVE_SPEED = rospy.get_param("/drive_speed")
+        self.DRIVE_SPEED = 1.0
         self.drive_pub = rospy.Publisher(DRIVE_TOPIC,
             AckermannDriveStamped, queue_size=10)
         self.error_pub = rospy.Publisher("/parking_error",
