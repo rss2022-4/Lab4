@@ -15,7 +15,7 @@ import sys
 #  v
 ###############################################################
 
-cone_template_path = './test_images_cone/test14.jpg'
+cone_template_path = './test_images_stata_line/line1.png'
 
 def image_print(img):
         """
@@ -25,6 +25,11 @@ def image_print(img):
         cv2.imshow("image", img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+def crop_image(img, top_left_inclusive, bottom_right_exclusive):
+    r_min, c_min = top_left_inclusive
+    r_max, c_max = bottom_right_exclusive
+    return img[r_min:r_max, c_min:c_max]
 
 def filter_contours(contours):
     if len(contours) == 0:
@@ -62,8 +67,8 @@ def cd_color_segmentation(img, template=None):
         """
 
     # Create mask for orange cone. HSV threshods
-    light_orange = (60, 170, 125) #(70, 180, 150)
-    dark_orange = (170, 255, 255) #(150, 255, 255)
+    light_orange = (100, 100, 100) #(60, 170, 125) #(70, 180, 150)
+    dark_orange = (180, 255, 255) #(170, 255, 255) #(150, 255, 255)
     kernel = np.ones((7, 7), np.uint8)
 
     filtered_img = cv2.dilate(cv2.erode(img, kernel, iterations=1), kernel, iterations=1)
@@ -72,17 +77,21 @@ def cd_color_segmentation(img, template=None):
     hsv_img = cv2.cvtColor(filtered_img, cv2.COLOR_RGB2HSV)
     mask = cv2.inRange(hsv_img, light_orange, dark_orange)
     #image_print(mask)
-    
+    #print('mask.shape', mask.shape)
+    cropped_mask = crop_image(mask, (mask.shape[0]*2//3, 0), (mask.shape[0], mask.shape[1]))
+    #print('cropped mask shape', cropped_mask.shape)
     # Find remaning contours, correspond to orange objects
-    contours = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
-    #print('num contours', len(contours))
+    
+    contours = cv2.findContours(cropped_mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
+   # print('num contours', len(contours))
     #print(contours)
     largest_contour = get_largest_contour(contours)
     #print(largest_contour)
 
     # Draw boxes around the contours
     x, y, w, h = cv2.boundingRect(largest_contour)
-    bounding_box = ((x, y), (x+w, y+h))
+    bounding_box = ((x, y+mask.shape[0]*2//3), (x+w, y+h+mask.shape[0]*2//3))
+    #print(bounding_box)
     return bounding_box
                                                            
 if __name__ == '__main__':

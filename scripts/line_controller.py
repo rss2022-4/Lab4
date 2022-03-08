@@ -7,7 +7,7 @@ import numpy as np
 from visual_servoing.msg import ConeLocation, ParkingError
 from ackermann_msgs.msg import AckermannDriveStamped
 
-class ParkingController():
+class LineController():
     """
     A controller for parking in front of a cone.
     Listens for a relative cone location and publishes control commands.
@@ -18,7 +18,7 @@ class ParkingController():
             self.relative_cone_callback)
 
         DRIVE_TOPIC = rospy.get_param("~drive_topic") # set in launch file; different for simulator vs racecar
-        DRIVE_SPEED = rospy.get_param("/drive_speed")
+        self.DRIVE_SPEED = rospy.get_param("/drive_speed")
         self.drive_pub = rospy.Publisher(DRIVE_TOPIC,
             AckermannDriveStamped, queue_size=10)
         self.error_pub = rospy.Publisher("/parking_error",
@@ -41,10 +41,11 @@ class ParkingController():
         
         theta = np.arctan2(self.relative_y, self.relative_x)
         distance = np.sqrt(self.relative_x**2 + self.relative_y**2)
-        print('theta', theta)
-        print('distance', distance)
-        print('x', x)
-        print('y', y)
+       
+        #print('x', self.relative_x)
+        #print('y', self.relative_y)
+
+
         # Within tolerable desired distance and angle with respect to the cone
         drive_cmd = self.drive(theta, drive_cmd)
 
@@ -93,8 +94,8 @@ class ParkingController():
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('ParkingController', anonymous=True)
-        ParkingController()
+        rospy.init_node('LineController', anonymous=True)
+        LineController()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

@@ -20,7 +20,7 @@ class ParkingController():
         DRIVE_TOPIC = rospy.get_param("~drive_topic") # set in launch file; different for simulator vs racecar
         self.drive_pub = rospy.Publisher(DRIVE_TOPIC,
             AckermannDriveStamped, queue_size=10)
-        self.error_pub = rospy.Publisher("/parking_error",
+        self.total_error_pub = rospy.Publisher("/total_parking_error",
             ParkingError, queue_size=10)
 
         self.parking_distance = .75 # meters; try playing with this number!
@@ -40,18 +40,21 @@ class ParkingController():
         
         theta = np.arctan2(self.relative_y, self.relative_x)
         distance = np.sqrt(self.relative_x**2 + self.relative_y**2)
-        print('theta', theta)
-        print('distance', distance)
-        print('x', x)
-        print('y', y)
+        #print('theta', theta)
+        #print('distance', distance)
+        #print('x', self.relative_x)
+        #print('y', self.relative_y)
         # Within tolerable desired distance and angle with respect to the cone
-        if abs(distance - self.dist_thresh) < self.parking_epsilon and theta < self.angle_epsilon:
+        if abs(distance - self.dist_thresh) < self.parking_epsilon and abs(theta) < self.angle_epsilon:
+            #print('in stopping condition')  
             drive_cmd = self.stop(drive_cmd)
         # Either too close or at an extreme angle. Correct by executing reversal
         elif distance < self.dist_thresh or abs(theta) > self.angle_thresh:
+            #print('extreme angle or extreme distance')
             drive_cmd = self.reversal(theta, drive_cmd)
         # Within reasonable area. Use controller
         else:
+            #print('in nominal condition')
             drive_cmd = self.drive(theta, drive_cmd)
 
         self.drive_pub.publish(drive_cmd)
@@ -89,12 +92,11 @@ class ParkingController():
         error_msg.distance_error = math.hypot(error_msg.x_error, error_msg.y_error)
 
         #################################
-        
-        self.error_pub.publish(error_msg)
+        self.total_error_pub.publish(error_msg)
 
     def initialize_drive_data(self):
         drive_data = AckermannDriveStamped()
-        drive_data.drive.speed = 1
+        drive_data.drive.speed = 0.5
         return drive_data
 
 if __name__ == '__main__':
