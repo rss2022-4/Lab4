@@ -14,7 +14,7 @@ from visual_servoing.msg import ConeLocationPixel
 from computer_vision.color_segmentation import cd_color_segmentation
 
 
-class LineDetector():
+class ConeDetector():
     """
     A class for applying your cone detection algorithms to the real robot.
     Subscribes to: /zed/zed_node/rgb/image_rect_color (Image) : the live RGB image from the onboard ZED camera.
