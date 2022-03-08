@@ -32,7 +32,8 @@ class LineController():
         self.parking_epsilon = 0.1
         self.angle_epsilon = 5*np.pi/180.
         self.previous_angle = 0
-        self.kd = 0
+        self.kp = 0.4
+        self.kd = 0.2
 
     def relative_cone_callback(self, msg):
         self.relative_x = msg.x_pos
@@ -44,7 +45,7 @@ class LineController():
        
         #print('x', self.relative_x)
         #print('y', self.relative_y)
-
+        print('distance', distance)
 
         # Within tolerable desired distance and angle with respect to the cone
         drive_cmd = self.drive(theta, drive_cmd)
@@ -64,7 +65,7 @@ class LineController():
     
     def drive(self, theta, drive_cmd):
         drive_cmd.drive.speed = abs(drive_cmd.drive.speed)
-        drive_cmd.drive.steering_angle = theta + self.kd*(theta - self.previous_angle)
+        drive_cmd.drive.steering_angle = self.kp*theta - self.kd*(theta - self.previous_angle)
         self.previous_steering_angle = theta
         return drive_cmd
 
